@@ -3,7 +3,7 @@ import numpy as np
 from torch import nn
 
 class A3C_Network(nn.Module):
-    def __init__(self, state_size, action_size):
+    def __init__(self, state_size, action_size, lock):
         super(A3C_Network, self).__init__()
         self.fc1 = nn.Linear(state_size, 256)
         self.lrelu1 = nn.LeakyReLU(0.1)
@@ -43,20 +43,21 @@ class A3C_Network(nn.Module):
         self.lstm.bias_hh.data.fill_(0)
 
         self.train()
+        self.lock = lock
+        self.hx = None
+        self.cx = None
 
-    def forward(self, inputs):
-        x, (hx, cx) = inputs
-
+    def forward(self, x):
         x = self.lrelu1(self.fc1(x))
         x = self.lrelu2(self.fc2(x))
         x = self.lrelu3(self.fc3(x))
         x = self.lrelu4(self.fc4(x))
 
         x = x.view(1, -1)
-        hx, cx = self.lstm(x, (hx, cx))
-        x = hx
+        self.hx, self.cx = self.lstm(x, (self.hx, self.cx))
+        x = self.hx
 
-        return self.critic_linear(x), F.softsign(self.actor_linear(x)), self.actor_linear2(x), (hx, cx)
+        return self.critic_linear(x), F.softsign(self.actor_linear(x)), self.actor_linear2(x)
 
     def init_weights(self, m):
         if isinstance(m, torch.nn.Linear):
@@ -70,5 +71,12 @@ class A3C_Network(nn.Module):
         x *= std / torch.sqrt((x**2).sum(1, keepdim=True))
         return x
 
-    def init_hidden(self):
-        return torch.zeros(1, self.hidden_size), torch.zeros(1, self.hidden_size)
+    def reset(self, global_net, done):
+        with self.lock:
+            self.load_state_dict(global_net.state_dict())
+        if done:
+            self.hx = torch.zeros(1, self.hidden_size)
+            self.cx = torch.zeros(1, self.hidden_size)
+        else:
+            self.hx = self.hx.detach()
+            self.cx = self.cx.detach()
