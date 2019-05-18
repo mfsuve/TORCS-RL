@@ -1,4 +1,8 @@
-class A3C_Network(torch.nn.Module):
+import torch
+import numpy as np
+from torch import nn
+
+class A3C_Network(nn.Module):
     def __init__(self, state_size, action_size):
         super(A3C_Network, self).__init__()
         self.fc1 = nn.Linear(state_size, 256)
@@ -7,7 +11,7 @@ class A3C_Network(torch.nn.Module):
         self.lrelu2 = nn.LeakyReLU(0.1)
         self.fc3 = nn.Linear(256, 128)
         self.lrelu3 = nn.LeakyReLU(0.1)
-        self.fc4 = nn.Linear(128, 128)
+        self.fc4 = nn.Linear(128, 1228)
         self.lrelu4 = nn.LeakyReLU(0.1)
 
         self.hidden_size = 128
@@ -65,3 +69,6 @@ class A3C_Network(torch.nn.Module):
         x = torch.randn(weights.size())
         x *= std / torch.sqrt((x**2).sum(1, keepdim=True))
         return x
+
+    def init_hidden(self):
+        return torch.zeros(1, self.hidden_size), torch.zeros(1, self.hidden_size)
