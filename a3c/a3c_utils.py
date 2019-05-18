@@ -12,3 +12,11 @@ class Counter(object):
     def value(self):
         with self.lock:
             return self.val.value
+
+class A3C_args:
+    def __init__(self):
+        self.max_time = 1000000
+        self.nstep = 20
+        self.max_eps_time = 2000
+        self.gamma = 0.97
+        self.lr = 0.0001
