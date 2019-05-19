@@ -1,6 +1,6 @@
 import torch
 
-class SharedAdam(torch.optim.Adam):
+class Shared_Adam(torch.optim.Adam):
     """ Original Adam optimizer in shared memory """
     def __init__(self, params, lr=1e-3, betas=(0.9, 0.9), eps=1e-8,
                  weight_decay=0, amsgrad=True):
