@@ -11,7 +11,7 @@ class A3C_Network(nn.Module):
         self.lrelu2 = nn.LeakyReLU(0.1)
         self.fc3 = nn.Linear(256, 128)
         self.lrelu3 = nn.LeakyReLU(0.1)
-        self.fc4 = nn.Linear(128, 1228)
+        self.fc4 = nn.Linear(128, 128)
         self.lrelu4 = nn.LeakyReLU(0.1)
 
         self.hidden_size = 128
