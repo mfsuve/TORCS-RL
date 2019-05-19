@@ -22,7 +22,7 @@ class A3C_args:
         self.lr = 0.0001
 
 class TrajectoryList:
-    def __init__(values=[], rewards=[], log_probs=[], entropies=[]):
+    def __init__(self, values=[], rewards=[], log_probs=[], entropies=[]):
         self.values = values
         self.rewards = rewards
         self.log_probs = log_probs
