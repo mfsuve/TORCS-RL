@@ -23,6 +23,7 @@ class A3C_args:
         self.gamma = 0.97
         self.beta = 0.01
         self.lr = 0.0001
+        self.num_workers = 1#8
 
 class TrajectoryList:
     def __init__(self, values=[], rewards=[], log_probs=[], entropies=[]):
