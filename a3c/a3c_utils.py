@@ -20,3 +20,10 @@ class A3C_args:
         self.max_eps_time = 2000
         self.gamma = 0.97
         self.lr = 0.0001
+
+class Trajectory:
+    def __init__(values, rewards, log_probs, entropies):
+        self.values = values
+        self.rewards = rewards
+        self.log_probs = log_probs
+        self.entropies = entropies
