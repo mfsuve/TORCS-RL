@@ -38,6 +38,9 @@ class TrajectoryList:
         self.log_probs.append(log_prob)
         self.entropies.append(entropy)
 
+    def __len__(self):
+        return len(self.rewards)
+
 def normal(x, mu, sigma):
     pi = np.array([np.pi])
     pi = torch.from_numpy(pi).float()
