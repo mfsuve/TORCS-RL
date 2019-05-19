@@ -73,4 +73,4 @@ class A3C_Agent(object):
         # Synchronizing
         self.network.reset(self.global_net, self.done)
         if self.done:
-            self.state = self.env.reset()
+            self.state = self.env.reset(relaunch=self.done, sampletrack=True, render=False)
