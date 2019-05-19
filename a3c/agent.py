@@ -16,7 +16,8 @@ class A3C_Agent(object):
         self.env = TorcsEnv(port=3101+rank, path='/usr/local/share/games/torcs/config/raceman/quickrace.xml')
 
     def soft_policy(self):
-        value, mu, sigma = self.network(self.state)
+        input = torch.from_numpy(self.state).unsqueeze(0).float()
+        value, mu, sigma = self.network(input)
         mu = torch.clamp(mu, -1.0, 1.0)
         sigma = F.softplus(sigma) + 1e-5
         eps = torch.randn(mu.size())
@@ -28,7 +29,7 @@ class A3C_Agent(object):
         action = torch.clamp(action, -1.0, 1.0)
         entropy = 0.5 * ((sigma * 2 * pi.expand_as(sigma)).log() + 1)
         log_prob = (prob + 1e-6).log()
-        return action, value, log_prob, entropy
+        return action.numpy(), value, log_prob, entropy
 
     def loss(self, t):
         actor_loss, critic_loss = 0, 0
@@ -40,7 +41,7 @@ class A3C_Agent(object):
         t.values.append(R)
         gae = torch.zeros(1, 1)
         for i in reversed(range(len(t))):
-            R = gamma * R + t.rewards[i]
+            R = self.args.gamma * R + t.rewards[i]
             advantage = R - t.values[i]
             critic_loss = critic_loss + 0.5 * advantage.pow(2)
 
