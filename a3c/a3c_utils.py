@@ -1,6 +1,6 @@
 from torch.multiprocessing import Lock, Value
 import torch
-import math
+import numpy as np
 
 class Counter(object):
     def __init__(self, val=0):
@@ -42,7 +42,7 @@ class TrajectoryList:
         return len(self.rewards)
 
 def normal(x, mu, sigma):
-    pi = np.array([math.pi])
+    pi = np.array([np.pi])
     pi = torch.from_numpy(pi).float()
     a = (-1 * (x - mu).pow(2) / (2 * sigma)).exp()
     b = 1 / (2 * sigma * pi.expand_as(sigma)).sqrt()
