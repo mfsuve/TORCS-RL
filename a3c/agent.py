@@ -40,7 +40,7 @@ class A3C_Agent(object):
 
         t.values.append(R)
         gae = torch.zeros(1, 1)
-        for i in reversed(range(len(t))):
+        for i in reversed(range(self.args.nstep)):
             R = self.args.gamma * R + t.rewards[i]
             advantage = R - t.values[i]
             critic_loss = critic_loss + 0.5 * advantage.pow(2)
