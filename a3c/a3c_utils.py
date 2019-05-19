@@ -26,20 +26,17 @@ class A3C_args:
         self.num_workers = 1#8
 
 class TrajectoryList:
-    def __init__(self, values=[], rewards=[], log_probs=[], entropies=[]):
-        self.values = values
-        self.rewards = rewards
-        self.log_probs = log_probs
-        self.entropies = entropies
+    def __init__(self):
+        self.values = []
+        self.rewards = []
+        self.log_probs = []
+        self.entropies = []
 
     def append(self, value, reward, log_prob, entropy):
         self.values.append(value)
         self.rewards.append(reward)
         self.log_probs.append(log_prob)
         self.entropies.append(entropy)
-
-    def __len__(self):
-        return len(self.rewards)
 
 def normal(x, mu, sigma):
     pi = np.array([np.pi])
