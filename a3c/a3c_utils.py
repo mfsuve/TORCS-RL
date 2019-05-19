@@ -21,8 +21,8 @@ class A3C_args:
         self.gamma = 0.97
         self.lr = 0.0001
 
-class Trajectory:
-    def __init__(values, rewards, log_probs, entropies):
+class TrajectoryList:
+    def __init__(values=[], rewards=[], log_probs=[], entropies=[]):
         self.values = values
         self.rewards = rewards
         self.log_probs = log_probs
