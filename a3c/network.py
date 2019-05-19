@@ -67,7 +67,7 @@ class A3C_Network(nn.Module):
             if m.bias is not None:
                 m.bias.data.fill_(0)
 
-    def init_std(self, std=1.0):
+    def init_std(self, weights, std=1.0):
         x = torch.randn(weights.size())
         x *= std / torch.sqrt((x**2).sum(1, keepdim=True))
         return x
