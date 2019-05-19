@@ -27,3 +27,9 @@ class TrajectoryList:
         self.rewards = rewards
         self.log_probs = log_probs
         self.entropies = entropies
+
+    def append(value, reward, log_prob, entropy):
+        self.values.append(value)
+        self.rewards.append(reward)
+        self.log_probs.append(log_prob)
+        self.entropies.append(entropy)
