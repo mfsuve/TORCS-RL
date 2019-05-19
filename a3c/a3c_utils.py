@@ -1,4 +1,5 @@
 from torch.multiprocessing import Lock, Value
+import torch
 
 class Counter(object):
     def __init__(self, val=0):
@@ -33,3 +34,6 @@ class TrajectoryList:
         self.rewards.append(reward)
         self.log_probs.append(log_prob)
         self.entropies.append(entropy)
+
+    def __len__(self):
+        return len(self.rewards)
