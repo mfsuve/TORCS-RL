@@ -59,7 +59,9 @@ class A3C_Network(nn.Module):
         self.hx, self.cx = self.lstm(x, (self.hx, self.cx))
         x = self.hx
 
-        return self.critic_linear(x), F.softsign(self.actor_linear(x)), self.actor_linear2(x)
+        return self.critic_linear(x).squeeze(), \
+               F.softsign(self.actor_linear(x)).squeeze(), \
+               self.actor_linear2(x).squeeze()
 
     def init_weights(self, m):
         if isinstance(m, torch.nn.Linear):
