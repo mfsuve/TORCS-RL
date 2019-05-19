@@ -3,7 +3,7 @@ import numpy as np
 from torch import nn
 
 class A3C_Network(nn.Module):
-    def __init__(self, state_size, action_size, lock):
+    def __init__(self, state_size, action_size, lock=None):
         super(A3C_Network, self).__init__()
         self.fc1 = nn.Linear(state_size, 256)
         self.lrelu1 = nn.LeakyReLU(0.1)
@@ -43,7 +43,8 @@ class A3C_Network(nn.Module):
         self.lstm.bias_hh.data.fill_(0)
 
         self.train()
-        self.lock = lock
+        if lock is not None:
+            self.lock = lock
         self.hx = None
         self.cx = None
 
