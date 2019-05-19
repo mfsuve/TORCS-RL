@@ -1,6 +1,7 @@
 import torch
 import numpy as np
 from torch import nn
+import torch.nn.functional as F
 
 class A3C_Network(nn.Module):
     def __init__(self, state_size, action_size, lock=None):
