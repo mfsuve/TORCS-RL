@@ -42,9 +42,6 @@ class Worker(Process):
             self.agent.update(trajectories)
             self.agent.reset()
 
-            # break
-
-
 counter = Counter()
 lock = Lock()
 args = A3C_args()
