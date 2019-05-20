@@ -11,7 +11,7 @@ class A3C_Agent(Process):
         super(A3C_Agent, self).__init__()
         self.network = A3C_Network(29, 3, lock)
         self.global_net = global_net
-        self.rank = rank
+        self.name = f'Process_{rank}' 
         self.counter = counter
         self.lock = lock
         self.opt = opt
@@ -43,7 +43,7 @@ class A3C_Agent(Process):
             if self.done:
                 eps_time = 0
                 eps_n += 1
-                print(f'\t\tProcess {self.rank} | Episode {eps_n}: Elapsed Time: {self.counter.value()}\tReward: {eps_r}')
+                print(f'\t\t{self.name} | Episode {eps_n}: Elapsed Time: {self.counter.value()}\tReward: {eps_r}')
                 eps_r = 0
 
             self.update()
