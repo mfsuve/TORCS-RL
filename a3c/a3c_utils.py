@@ -25,22 +25,6 @@ class A3C_args:
         self.lr = 0.0001
         self.num_workers = 1#8
 
-class TrajectoryList:
-    def __init__(self):
-        self.values = []
-        self.rewards = []
-        self.log_probs = []
-        self.entropies = []
-
-    def append(self, value, reward, log_prob, entropy):
-        self.values.append(value)
-        self.rewards.append(reward)
-        self.log_probs.append(log_prob)
-        self.entropies.append(entropy)
-
-    def __len__(self):
-        return len(self.rewards)
-
 def normal(x, mu, sigma):
     pi = np.array([np.pi])
     pi = torch.from_numpy(pi).float()
