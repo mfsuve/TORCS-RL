@@ -51,7 +51,7 @@ class TorcsEnv:
         self.port = port
         self.initial_run = True
         # self.reset_torcs()
-        
+
         if path:
             self.tree = ET.parse(path)
             self.root = self.tree.getroot()
@@ -173,7 +173,7 @@ class TorcsEnv:
                 - relaunch: Relaunch the game. Necessary to call with
                     from time to time because of the memory leak
                 sampletrack: Sample a random track and load the game
-                    with it at the relaunch. Relaunch needs to be 
+                    with it at the relaunch. Relaunch needs to be
                     true in order to modify the track!
                 render: Change the mode. If true, game will be launch
                     in "render" mode else with "results only" mode.
@@ -200,7 +200,7 @@ class TorcsEnv:
 
             ## TENTATIVE. Restarting TORCS every episode suffers the memory leak bug!
             if relaunch is True:
-                self.reset_torcs()
+                self.reset_torcs(port=self.port)
                 # print("### TORCS is RELAUNCHED ###")
 
         # Modify here if you use multiple tracks in the environment
@@ -231,7 +231,7 @@ class TorcsEnv:
        #print("relaunch torcs")
         os.system('pkill torcs')
         time.sleep(0.5)
-        os.system('torcs -nofuel -nodamage -nolaptime -p 3101 &')
+        os.system(f'torcs -nofuel -nodamage -nolaptime -p {port} &')
         time.sleep(0.5)
         os.system('sh autostart.sh')
         time.sleep(0.5)
