@@ -6,7 +6,9 @@ import numpy as np
 import copy
 import collections as col
 import os
+import subprocess
 import time
+import signal
 import xml.etree.ElementTree as ET
 
 from utils import sample_track
@@ -47,9 +49,25 @@ class TorcsEnv:
 
     initial_reset = True
 
+    def start_torcs_process(self):
+        if self.torcs_proc is not None:
+            os.killpg(os.getpgid(self.torcs_proc.pid), signal.SIGKILL)
+            time.sleep(0.5)
+            self.torcs_proc = None
+        window_title = str(self.port)
+        command = 'torcs -nofuel -nodamage -nolaptime -title {} -p {}'.format(window_title, self.port)
+        if self.vision is True:
+            command += ' -vision'
+        self.torcs_proc = subprocess.Popen([command], shell=True, preexec_fn=os.setsid)
+        time.sleep(0.5)
+        print('Called from start_torcs_process')
+        os.system('sh autostart.sh {}'.format(self.torcs_proc.pid))
+
     def __init__(self, port=3101, path=None):
         self.port = port
         self.initial_run = True
+        self.torcs_proc = None
+        self.vision = False
         # self.reset_torcs()
 
         if path:
@@ -204,7 +222,7 @@ class TorcsEnv:
                 # print("### TORCS is RELAUNCHED ###")
 
         # Modify here if you use multiple tracks in the environment
-        self.client = snakeoil3.Client(p=self.port, vision=False)  # Open new UDP in vtorcs
+        self.client = snakeoil3.Client(self.start_torcs_process, p=self.port, vision=False)  # Open new UDP in vtorcs
         self.client.MAX_STEPS = np.inf
 
         client = self.client
@@ -228,13 +246,14 @@ class TorcsEnv:
         return self.observation
 
     def reset_torcs(self, port=3101):
-       #print("relaunch torcs")
-        os.system('pkill torcs')
-        time.sleep(0.5)
-        os.system(f'torcs -nofuel -nodamage -nolaptime -p {port} &')
-        time.sleep(0.5)
-        os.system('sh autostart.sh')
-        time.sleep(0.5)
+        #print("relaunch torcs")
+        self.start_torcs_process()
+        # os.system('pkill torcs')
+        # time.sleep(0.5)
+        # os.system(f'torcs -nofuel -nodamage -nolaptime -p {port} &')
+        # time.sleep(0.5)
+        # os.system('sh autostart.sh')
+        # time.sleep(0.5)
 
     def agent_to_torcs(self, u):
         torcs_action = {'steer': u[0]}
