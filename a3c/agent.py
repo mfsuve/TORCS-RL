@@ -11,7 +11,7 @@ class A3C_Agent(Process):
         super(A3C_Agent, self).__init__()
         self.network = A3C_Network(29, 3, lock)
         self.global_net = global_net
-        self.name = f'Process_{rank}' 
+        self.name = f'Process_{rank}'
         self.counter = counter
         self.lock = lock
         self.opt = opt
@@ -43,7 +43,9 @@ class A3C_Agent(Process):
             if self.done:
                 eps_time = 0
                 eps_n += 1
-                print(f'\t\t{self.name} | Episode {eps_n}: Elapsed Time: {self.counter.value()}\tReward: {eps_r}')
+                with open(f'../../logs/{self.name}.txt', 'a+') as file:
+                    print(f'{self.name} | Episode {eps_n}\t:\tElapsed Time: {self.counter.value():<15}Reward: {eps_r}', \
+                            file=file)
                 eps_r = 0
 
             self.update()
