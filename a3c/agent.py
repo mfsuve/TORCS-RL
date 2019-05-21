@@ -11,7 +11,7 @@ class A3C_Agent(Process):
         super(A3C_Agent, self).__init__()
         self.network = A3C_Network(29, 3, lock)
         self.global_net = global_net
-        self.name = f'Process_{rank}' 
+        self.name = f'Process_{rank}'
         self.counter = counter
         self.lock = lock
         self.opt = opt
