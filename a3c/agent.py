@@ -43,7 +43,9 @@ class A3C_Agent(Process):
             if self.done:
                 eps_time = 0
                 eps_n += 1
-                print(f'\t\t{self.name} | Episode {eps_n}: Elapsed Time: {self.counter.value()}\tReward: {eps_r}')
+                with open(f'../../logs/{self.name}.txt', 'a+') as file:
+                    print(f'{self.name} | Episode {eps_n}\t:\tElapsed Time: {self.counter.value():<15}Reward: {eps_r}', \
+                            file=file)
                 eps_r = 0
 
             self.update()

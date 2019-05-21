@@ -23,7 +23,7 @@ class A3C_args:
         self.gamma = 0.97
         self.beta = 0.01
         self.lr = 0.0001
-        self.num_workers = 1#8
+        self.num_workers = 8
 
 def normal(x, mu, sigma):
     pi = np.array([np.pi])
