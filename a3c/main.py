@@ -18,7 +18,9 @@ workers = []
 for i in range(args.num_workers):
     worker = A3C_Agent(i, global_net, counter, lock, opt, args)
     workers.append(worker)
-    worker.start()
+
+for w in workers:
+    w.start()
     sleep(0.1)
 
 for w in workers: w.join()
