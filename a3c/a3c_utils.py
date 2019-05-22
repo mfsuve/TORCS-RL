@@ -23,10 +23,10 @@ class A3C_args:
     def __init__(self):
         self.max_time = 1000000
         self.nstep = 20
-        self.max_eps_time = 2000
-        self.gamma = 0.97
+        self.max_eps_time = 300
+        self.gamma = 0.99
         self.beta = 0.01
-        self.lr = 0.0001
+        self.lr = 0.001
         self.num_workers = 8
         self.plot_rate = 10
 
