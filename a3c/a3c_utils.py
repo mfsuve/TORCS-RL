@@ -28,7 +28,7 @@ class A3C_args:
         self.beta = 0.01
         self.lr = 0.001
         self.num_workers = 8
-        self.plot_rate = 10
+        self.plot_rate = 30
 
 class Recorder:
     def __init__(self, manager):
