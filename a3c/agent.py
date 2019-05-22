@@ -47,6 +47,7 @@ class Worker(A3C_Agent):
         eps_n = 0
         eps_time = 0
         eps_r = 0
+        relaunch = True
         while self.counter.value() < self.args.max_time:
             for step in range(self.args.nstep):
                 action, value, log_prob, entropy = self.soft_policy()
@@ -66,13 +67,15 @@ class Worker(A3C_Agent):
             if self.done:
                 eps_time = 0
                 eps_n += 1
+                relaunch = eps_n % 10 == 0
                 with open(f'../../logs/{self.name}.txt', 'a+') as file:
                     print(f'{self.name} | Episode {eps_n<6}:\tElapsed Time: {self.counter.value():<15}Reward: {eps_r}', \
                             file=file)
                 eps_r = 0
 
             self.update()
-            self.reset()
+            self.reset(relaunch=relaunch)
+            relaunch = False
 
     def soft_policy(self):
         input = torch.from_numpy(self.state).unsqueeze(0).float()
