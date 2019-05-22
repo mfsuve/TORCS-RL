@@ -23,12 +23,14 @@ class A3C_Agent(Process):
         self.env = TorcsEnv(port=3101+rank, path='/usr/local/share/games/torcs/config/raceman/quickrace.xml')
         self.reset()
 
-    def reset(self):
+    def reset(self, relaunch=None):
+        if relaunch is None:
+            relaunch = self.done
         # Synchronizing
         self.time_step = self.counter.value()
         self.network.reset(self.global_net, self.done)
         if self.done:
-            self.state = self.env.reset(relaunch=self.done, sampletrack=True, render=False)
+            self.state = self.env.reset(relaunch=relaunch, sampletrack=True, render=False)
         self.values = []
         self.rewards = []
         self.log_probs = []
@@ -64,6 +66,9 @@ class Worker(A3C_Agent):
             if self.done:
                 eps_time = 0
                 eps_n += 1
+                with open(f'../../logs/{self.name}.txt', 'a+') as file:
+                    print(f'{self.name} | Episode {eps_n<6}:\tElapsed Time: {self.counter.value():<15}Reward: {eps_r}', \
+                            file=file)
                 eps_r = 0
 
             self.update()
@@ -161,7 +166,7 @@ class Tester(A3C_Agent):
                 self.recorder.rewards.append(eps_r)
                 self.recorder.best_rewards.append(best_r)
                 self.recorder.time_steps.append(self.time_step)
-                self.logger.log(f'Reward: {eps_r:<10}Best Reward: {best_r}')
+                self.logger.log(f'Reward: {eps_r:.5f}\tBest Reward: {best_r.5f}')
                 if (eps_n + 1) % self.args.plot_rate == 0:
                     self.plot()
                 eps_r = 0
