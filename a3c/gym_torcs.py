@@ -60,7 +60,6 @@ class TorcsEnv:
             command += ' -vision'
         self.torcs_proc = subprocess.Popen([command], shell=True, preexec_fn=os.setsid)
         time.sleep(0.5)
-        print('Called from start_torcs_process')
         os.system('sh autostart.sh {}'.format(self.torcs_proc.pid))
 
     def __init__(self, port=3101, path=None):
