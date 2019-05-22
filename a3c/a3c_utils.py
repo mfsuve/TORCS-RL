@@ -1,6 +1,10 @@
 from torch.multiprocessing import Lock, Value
 import torch
+from network import A3C_Network
 import numpy as np
+import logging
+import logging.handlers
+import os
 
 class Counter(object):
     def __init__(self, val=0):
@@ -24,6 +28,35 @@ class A3C_args:
         self.beta = 0.01
         self.lr = 0.0001
         self.num_workers = 8
+        self.plot_rate = 10
+
+class Recorder:
+    def __init__(self, manager):
+        self.rewards = manager.list()
+        self.best_rewards = manager.list()
+        self.best_net = A3C_Network(29, 3)
+        self.best_net.share_memory()
+        self.time_steps = manager.list()
+
+class Logger:
+    def __init__(self):
+        self.logger = logging.getLogger('a3c_logger')
+        self.logger.setLevel(logging.INFO)
+        server = '127.0.0.1:3000'
+        path = '/'
+        method = 'POST'
+        handler = logging.handlers.HTTPHandler(server, path, method)
+        handler.setLevel(logging.INFO)
+        formatter = logging.Formatter('%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
+        handler.setFormatter(formatter)
+        self.logger.addHandler(handler)
+        try:
+            os.remove('logger/logs.txt')
+        except FileNotFoundError:
+            pass
+
+    def log(self, msg):
+        self.logger.info(msg)
 
 def normal(x, mu, sigma):
     pi = np.array([np.pi])
