@@ -20,6 +20,7 @@ class A3C_Agent(Process):
         self.lock = lock
         self.args = args
         self.done = True
+        self.name = ''
         self.env = TorcsEnv(port=3101+rank, path='/usr/local/share/games/torcs/config/raceman/quickrace.xml')
         self.reset()
 
@@ -36,6 +37,10 @@ class A3C_Agent(Process):
         self.log_probs = []
         self.entropies = []
 
+    def internal_log(self, *msg):
+        with open(f'../../logs/{self.name}.txt', 'a+') as file:
+            print(*msg, file=file)
+
 
 class Worker(A3C_Agent):
     def __init__(self, rank, global_net, counter, lock, opt, args):
@@ -47,7 +52,7 @@ class Worker(A3C_Agent):
         eps_n = 0
         eps_time = 0
         eps_r = 0
-        relaunch = True
+        relaunch = False
         while self.counter.value() < self.args.max_time:
             for step in range(self.args.nstep):
                 action, value, log_prob, entropy = self.soft_policy()
@@ -68,9 +73,7 @@ class Worker(A3C_Agent):
                 eps_time = 0
                 eps_n += 1
                 relaunch = eps_n % 10 == 0
-                with open(f'../../logs/{self.name}.txt', 'a+') as file:
-                    print(f'{self.name} | Episode {eps_n<6}:\tElapsed Time: {self.counter.value():<15}Reward: {eps_r}', \
-                            file=file)
+                self.internal_log(f'{self.name} | Episode {eps_n:<4}: Elapsed Time: {self.counter.value():<10} Reward: {eps_r}')
                 eps_r = 0
 
             self.update()
@@ -142,6 +145,7 @@ class Worker(A3C_Agent):
 class Tester(A3C_Agent):
     def __init__(self, rank, global_net, counter, lock, recorder, args):
         super(Tester, self).__init__(rank, global_net, counter, lock, args)
+        self.network.eval()
         self.name = f'Tester'
         self.recorder = recorder
         self.logger = Logger()
@@ -169,7 +173,7 @@ class Tester(A3C_Agent):
                 self.recorder.rewards.append(eps_r)
                 self.recorder.best_rewards.append(best_r)
                 self.recorder.time_steps.append(self.time_step)
-                self.logger.log(f'Reward: {eps_r:.5f}\tBest Reward: {best_r.5f}')
+                self.logger.log(f'Reward: {eps_r:.5f}\tBest Reward: {best_r:.5f}')
                 if (eps_n + 1) % self.args.plot_rate == 0:
                     self.plot()
                 eps_r = 0
