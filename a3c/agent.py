@@ -37,6 +37,12 @@ class A3C_Agent(Process):
         self.log_probs = []
         self.entropies = []
 
+    def normalize_state(self):
+        def normalize_from(x, a, b):
+            return (2 * ((x - a) / (b - a))) - 1
+        self.state[1:20] = normalize_from(self.state[1:20], -0.01, 2)
+        self.state[21:] = normalize_from(self.state[21:], 0, 1)
+
     def internal_log(self, *msg):
         with open(f'../../logs/{self.name}.txt', 'a+') as file:
             print(*msg, file=file)
@@ -57,6 +63,7 @@ class Worker(A3C_Agent):
             for step in range(self.args.nstep):
                 action, value, log_prob, entropy = self.soft_policy()
                 self.state, reward, done, info = self.env.step(action)
+                self.normalize_state()
                 # reward = max(min(float(reward), 1.0), -1.0)
 
                 eps_time += 1
@@ -159,6 +166,7 @@ class Tester(A3C_Agent):
 
             action = self.greedy_policy()
             self.state, reward, done, info = self.env.step(action)
+            self.normalize_state()
 
             eps_time += 1
             eps_r += reward
