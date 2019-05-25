@@ -18,6 +18,7 @@ class SAC_args:
         self.clipgrad = True
         self.start_sigma = 0.9
         self.end_sigma = 0.1
+        self.theta = 0.15
 
 
 class OrnsteinUhlenbeckProcess(object):

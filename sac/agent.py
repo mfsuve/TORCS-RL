@@ -20,6 +20,9 @@ class SAC_Agent:
         state_dim = self.env.observation_space.shape[0]
         hidden_dim = 256
 
+        self.action_size = action_dim
+        self.state_size = state_dim
+
         self.value_net = ValueNetwork(state_dim, hidden_dim).to(self.args.device)
         self.target_value_net = ValueNetwork(state_dim, hidden_dim).to(self.args.device)
 
@@ -54,7 +57,7 @@ class SAC_Agent:
             eps_r = 0
             sigma = (self.args.start_sigma - self.args.end_sigma) * (
                 max(0, 1 - eps_n / self.args.max_eps)) + self.args.end_sigma
-            randomprocess = OrnsteinUhlenbeckProcess(hyprm.theta, sigma, outsize)
+            randomprocess = OrnsteinUhlenbeckProcess(self.args.tetha, sigma, self.action_size)
 
             for step in range(self.args.max_eps_time):  # Episode
                 if time > 1000:
