@@ -44,7 +44,7 @@ class SAC_Agent:
 
         current_time = time.strftime('%d-%b-%y-%H.%M.%S', time.localtime())
         self.plot_folder = f'plots/{current_time}'
-        self.model_save_folder = f'model/{current_time}'.state_dict()
+        self.model_save_folder = f'model/{current_time}'
         make_sure_dir_exists(self.plot_folder)
         make_sure_dir_exists(self.model_save_folder)
         self.cp = Checkpoint(self.model_save_folder)
