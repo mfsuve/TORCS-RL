@@ -144,16 +144,18 @@ class SAC_Agent:
             )
 
     def test(self, eps_n):
-        rewards = 0
+        rewards = []
         for _ in range(self.args.test_rate):
-            state = self.env.reset()
+            state = self.env.reset(relaunch=False, render=False, sampletrack=False)
+            running_reward = 0
             for t in range(50000):
                 action = self.policy_net.get_action(state)
                 state, reward, done, _ = self.env.step(action.detach())
-                reward += reward
+                running_reward += reward
                 if done:
                     break
-        avg_reward = rewards / self.args.test_rate
+            rewards.append(running_reward)
+        avg_reward = sum(rewards) / self.args.test_rate
         log(f'Test Results | Episode {eps_n:<4} Average Reward: {avg_reward}')
         return avg_reward
 
