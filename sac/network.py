@@ -89,7 +89,7 @@ class PolicyNetwork(nn.Module):
 
     def get_train_action(self, state, randomprocess):
         self.eval()
-        state = torch.FloatTensor(state, dtype=torch.float32).unsqueeze(0).to(self.device)
+        state = torch.FloatTensor(state).unsqueeze(0).to(self.device)
         mean, log_std = self.forward(state)
         std = log_std.exp()
 
@@ -105,7 +105,7 @@ class PolicyNetwork(nn.Module):
 
     def get_test_action(self, state):
         self.eval()
-        state = torch.FloatTensor(state, dtype=torch.float32).unsqueeze(0).to(self.device)
+        state = torch.FloatTensor(state).unsqueeze(0).to(self.device)
         mean, log_std = self.forward(state)
 
         action = torch.clamp(mean, -1, 1).squeeze().cpu()

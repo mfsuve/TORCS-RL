@@ -57,11 +57,11 @@ class SAC_Agent:
         test_rewards = []
         best_reward = -np.inf
         for eps_n in range(1, self.args.max_eps + 1):  # Train loop
-            state = self.env.reset(relaunch=(eps_n - 1) % 100 == 0, render=False, sampletrack=False)
+            state = self.env.reset(relaunch=(eps_n - 1) % (100/self.args.test_rate) == 0, render=False, sampletrack=False)
             eps_r = 0
             sigma = (self.args.start_sigma - self.args.end_sigma) * (
                 max(0, 1 - (eps_n - 1) / self.args.max_eps)) + self.args.end_sigma
-            randomprocess = OrnsteinUhlenbeckProcess(self.args.tetha, sigma, self.action_size)
+            randomprocess = OrnsteinUhlenbeckProcess(self.args.theta, sigma, self.action_size)
 
             for step in range(self.args.max_eps_time):  # Episode
                 if time > 1000:
@@ -92,7 +92,7 @@ class SAC_Agent:
                 best_reward = test_reward
                 self.save_checkpoint(eps_n)
 
-            log(f'Episode {eps_n:<4} Reward: {eps_r:<10.5f} Test Reward: {avg_reward:<10.5f}')
+            log(f'Episode {eps_n:<4} Reward: {eps_r:<10.5f} Test Reward: {test_reward:<10.5f}')
 
             if eps_n % self.args.plot_per == 0:
                 self.plot(rewards, test_rewards, eps_n)
