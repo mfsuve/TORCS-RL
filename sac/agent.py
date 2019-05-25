@@ -102,11 +102,11 @@ class SAC_Agent:
         self.policy_net.train()
         state, action, reward, next_state, done = self.buffer.sample(self.args.batch_size)
 
-        state = FloatTensor(state, dtype=torch.float32).to(self.args.device)
-        next_state = FloatTensor(next_state, dtype=torch.float32).to(self.args.device)
-        action = FloatTensor(action, dtype=torch.float32).to(self.args.device)
-        reward = FloatTensor(reward, dtype=torch.float32).unsqueeze(1).to(self.args.device)
-        done = FloatTensor(np.float32(done), dtype=torch.float32).unsqueeze(1).to(self.args.device)
+        state = FloatTensor(state).to(self.args.device)
+        next_state = FloatTensor(next_state).to(self.args.device)
+        action = FloatTensor(action).to(self.args.device)
+        reward = FloatTensor(reward).unsqueeze(1).to(self.args.device)
+        done = FloatTensor(np.float32(done)).unsqueeze(1).to(self.args.device)
 
         predicted_q_value1 = self.soft_q_net1(state, action)
         predicted_q_value2 = self.soft_q_net2(state, action)
