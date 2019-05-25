@@ -1,4 +1,4 @@
-from sac_utils import SAC_args, make_sure_dir_exists, log, remove_log_file
+from sac_utils import SAC_args, make_sure_dir_exists, log, remove_log_file, OrnsteinUhlenbeckProcess
 from buffer import ReplayBuffer
 from network import ValueNetwork, SoftQNetwork, PolicyNetwork
 from gym_torcs import TorcsEnv
@@ -12,7 +12,7 @@ import time
 class SAC_Agent:
 
     def __init__(self):
-        self.env = TorcsEnv(path='/usr/local/share/games/torcs/config/raceman/quickrace.xml', relaunch_rate=25)
+        self.env = TorcsEnv(path='/usr/local/share/games/torcs/config/raceman/quickrace.xml')
         self.args = SAC_args()
         self.buffer = ReplayBuffer(self.args.buffer_size)
 
@@ -44,19 +44,21 @@ class SAC_Agent:
         make_sure_dir_exists(self.plot_folder)
         remove_log_file()
 
-
     def train(self):
         time = 0
         eps_n = 0
         rewards = []
         test_rewards = []
         for eps_n in range(1, self.args.max_eps + 1):  # Train loop
-            state = self.env.reset()
+            state = self.env.reset(relaunch=(eps_n - 1) % 100 == 0, render=False, sampletrack=False)
             eps_r = 0
+            sigma = (self.args.start_sigma - self.args.end_sigma) * (
+                max(0, 1 - eps_n / self.args.max_eps)) + self.args.end_sigma
+            randomprocess = OrnsteinUhlenbeckProcess(hyprm.theta, sigma, outsize)
 
             for step in range(self.args.max_eps_time):  # Episode
                 if time > 1000:
-                    action = self.policy_net.get_action(state).detach()
+                    action = self.policy_net.get_action(state, randomprocess).detach()
                     next_state, reward, done, _ = self.env.step(action.numpy())
                 else:  # Random actions for the first few times
                     action = self.env.action_space.sample()
@@ -84,13 +86,14 @@ class SAC_Agent:
                 self.plot(rewards, test_rewards, eps_n)
 
     def update(self):
+        self.policy_net.train()
         state, action, reward, next_state, done = self.buffer.sample(self.args.batch_size)
 
-        state = FloatTensor(state).to(self.args.device)
-        next_state = FloatTensor(next_state).to(self.args.device)
-        action = FloatTensor(action).to(self.args.device)
-        reward = FloatTensor(reward).unsqueeze(1).to(self.args.device)
-        done = FloatTensor(np.float32(done)).unsqueeze(1).to(self.args.device)
+        state = FloatTensor(state, dtype=torch.float32).to(self.args.device)
+        next_state = FloatTensor(next_state, dtype=torch.float32).to(self.args.device)
+        action = FloatTensor(action, dtype=torch.float32).to(self.args.device)
+        reward = FloatTensor(reward, dtype=torch.float32).unsqueeze(1).to(self.args.device)
+        done = FloatTensor(np.float32(done), dtype=torch.float32).unsqueeze(1).to(self.args.device)
 
         predicted_q_value1 = self.soft_q_net1(state, action)
         predicted_q_value2 = self.soft_q_net2(state, action)
@@ -105,9 +108,13 @@ class SAC_Agent:
 
         self.soft_q_opt1.zero_grad()
         q_value_loss1.backward()
+        if self.args.clipgrad:
+            self.clip_grad(self.soft_q_net1.parameters())
         self.soft_q_opt1.step()
         self.soft_q_opt2.zero_grad()
         q_value_loss2.backward()
+        if self.args.clipgrad:
+            self.clip_grad(self.soft_q_net2.parameters())
         self.soft_q_opt2.step()
 
         # Training Value function
@@ -117,6 +124,8 @@ class SAC_Agent:
 
         self.value_opt.zero_grad()
         value_loss.backward()
+        if self.args.clipgrad:
+            self.clip_grad(self.value_net.parameters())
         self.value_opt.step()
 
         # Training Policy function
@@ -124,6 +133,8 @@ class SAC_Agent:
 
         self.policy_opt.zero_grad()
         policy_loss.backward()
+        if self.args.clipgrad:
+            self.clip_grad(self.policy_net.parameters())
         self.policy_opt.step()
 
         # Updating target value network
@@ -153,3 +164,7 @@ class SAC_Agent:
         plt.xlabel('Episode')
         plt.legend()
         plt.savefig(f'{self.plot_folder}/{eps_n}')
+
+    def clip_grad(self, parameters):
+        for param in parameters:
+            param.grad.data.clamp_(-1, 1)
