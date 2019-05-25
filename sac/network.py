@@ -16,6 +16,8 @@ class ValueNetwork(nn.Module):
         self.linear3.weight.data.uniform_(-init_w, init_w)
         self.linear3.bias.data.uniform_(-init_w, init_w)
 
+        self.train()
+
     def forward(self, state):
         x = F.relu(self.linear1(state))
         x = F.relu(self.linear2(x))
@@ -33,6 +35,8 @@ class SoftQNetwork(nn.Module):
 
         self.linear3.weight.data.uniform_(-init_w, init_w)
         self.linear3.bias.data.uniform_(-init_w, init_w)
+
+        self.train()
 
     def forward(self, state, action):
         x = torch.cat([state, action], 1)
@@ -61,6 +65,7 @@ class PolicyNetwork(nn.Module):
         self.log_std_linear.bias.data.uniform_(-init_w, init_w)
 
         self.device = SAC_args().device
+        self.train()
 
     def forward(self, state):
         x = F.relu(self.linear1(state))
@@ -82,8 +87,9 @@ class PolicyNetwork(nn.Module):
         log_prob = Normal(mean, std).log_prob(mean + std * z.to(self.device)) - torch.log(1 - action.pow(2) + epsilon)
         return action, log_prob, z, mean, log_std
 
-    def get_action(self, state):
-        state = torch.FloatTensor(state).unsqueeze(0).to(self.device)
+    def get_action(self, state, randomprocess):
+        self.eval()
+        state = torch.FloatTensor(state, dtype=torch.float32).unsqueeze(0).to(self.device)
         mean, log_std = self.forward(state)
         std = log_std.exp()
 
@@ -91,6 +97,8 @@ class PolicyNetwork(nn.Module):
         z = normal.sample().to(self.device)
         action = torch.tanh(mean + std * z)
 
-        action = action.cpu()
-        action = torch.clamp(action, -1, 1)
-        return action[0]
+        action = action.cpu() + randomprocess.noise()
+        action = torch.clamp(action, -1, 1).squeeze()
+        action[1] = (action[1] + 1) / 2
+        action[-1] = -1
+        return action
