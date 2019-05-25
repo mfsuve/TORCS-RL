@@ -1,4 +1,4 @@
-from sac_utils import SAC_args, make_sure_dir_exists, log, remove_log_file, OrnsteinUhlenbeckProcess
+from sac_utils import SAC_args, make_sure_dir_exists, log, remove_log_file, OrnsteinUhlenbeckProcess, Checkpoint
 from buffer import ReplayBuffer
 from network import ValueNetwork, SoftQNetwork, PolicyNetwork
 from gym_torcs import TorcsEnv
@@ -44,7 +44,10 @@ class SAC_Agent:
 
         current_time = time.strftime('%d-%b-%y-%H.%M.%S', time.localtime())
         self.plot_folder = f'plots/{current_time}'
+        self.model_save_folder = f'model/{current_time}'.state_dict()
         make_sure_dir_exists(self.plot_folder)
+        make_sure_dir_exists(self.model_save_folder)
+        self.cp = Checkpoint(self.model_save_folder)
         remove_log_file()
 
     def train(self):
@@ -52,16 +55,17 @@ class SAC_Agent:
         eps_n = 0
         rewards = []
         test_rewards = []
+        best_reward = -np.inf
         for eps_n in range(1, self.args.max_eps + 1):  # Train loop
             state = self.env.reset(relaunch=(eps_n - 1) % 100 == 0, render=False, sampletrack=False)
             eps_r = 0
             sigma = (self.args.start_sigma - self.args.end_sigma) * (
-                max(0, 1 - eps_n / self.args.max_eps)) + self.args.end_sigma
+                max(0, 1 - (eps_n - 1) / self.args.max_eps)) + self.args.end_sigma
             randomprocess = OrnsteinUhlenbeckProcess(self.args.tetha, sigma, self.action_size)
 
             for step in range(self.args.max_eps_time):  # Episode
                 if time > 1000:
-                    action = self.policy_net.get_action(state, randomprocess).detach()
+                    action = self.policy_net.get_train_action(state, randomprocess).detach()
                     next_state, reward, done, _ = self.env.step(action.numpy())
                 else:  # Random actions for the first few times
                     action = self.env.action_space.sample()
@@ -81,12 +85,18 @@ class SAC_Agent:
 
             rewards.append(eps_r)
 
-            log(f'Episode {eps_n:<4} Reward: {eps_r}')
+            test_reward = self.test(eps_n)
+            test_rewards.append(test_reward)
 
-            if eps_n % self.args.test_per == 0:
-                test_reward = self.test(eps_n)
-                test_rewards.append(test_reward)
+            if test_reward > best_reward:
+                best_reward = test_reward
+                self.save_checkpoint(eps_n)
+
+            log(f'Episode {eps_n:<4} Reward: {eps_r:<10.5f} Test Reward: {avg_reward:<10.5f}')
+
+            if eps_n % self.args.plot_per == 0:
                 self.plot(rewards, test_rewards, eps_n)
+
 
     def update(self):
         self.policy_net.train()
@@ -152,24 +162,27 @@ class SAC_Agent:
             state = self.env.reset(relaunch=False, render=False, sampletrack=False)
             running_reward = 0
             for t in range(50000):
-                action = self.policy_net.get_action(state)
+                action = self.policy_net.get_test_action(state)
                 state, reward, done, _ = self.env.step(action.detach())
                 running_reward += reward
                 if done:
                     break
             rewards.append(running_reward)
         avg_reward = sum(rewards) / self.args.test_rate
-        log(f'Test Results | Episode {eps_n:<4} Average Reward: {avg_reward}')
         return avg_reward
 
     def plot(self, rewards, test_rewards, eps_n):
         figure = plt.figure()
         plt.plot(rewards, label='Train Rewards')
-        plt.plot(range(self.args.test_per, eps_n + 1, self.args.test_per), test_rewards, label='Test Rewards')
+        plt.plot(test_rewards, label='Test Rewards')
         plt.xlabel('Episode')
         plt.legend()
-        plt.savefig(f'{self.plot_folder}/{eps_n}')
+        plt.savefig(f'{self.plot_folder}/{eps_n}.png')
 
     def clip_grad(self, parameters):
         for param in parameters:
             param.grad.data.clamp_(-1, 1)
+
+    def save_checkpoint(self, eps_n):
+        self.cp.update(self.value_net, self.soft_q_net1, self.soft_q_net2, self.policy_net)
+        self.cp.save(f'{eps_n}.pth')
