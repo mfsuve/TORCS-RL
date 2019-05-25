@@ -15,6 +15,7 @@ class SAC_args:
         self.device = 'cpu'
         self.test_rate = 5
         self.test_per = 50
+        self.save_per = 500
         self.clipgrad = True
         self.start_sigma = 0.9
         self.end_sigma = 0.1

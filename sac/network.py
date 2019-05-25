@@ -87,7 +87,7 @@ class PolicyNetwork(nn.Module):
         log_prob = Normal(mean, std).log_prob(mean + std * z.to(self.device)) - torch.log(1 - action.pow(2) + epsilon)
         return action, log_prob, z, mean, log_std
 
-    def get_action(self, state, randomprocess):
+    def get_train_action(self, state, randomprocess):
         self.eval()
         state = torch.FloatTensor(state, dtype=torch.float32).unsqueeze(0).to(self.device)
         mean, log_std = self.forward(state)
@@ -101,4 +101,15 @@ class PolicyNetwork(nn.Module):
         action = torch.clamp(action, -1, 1).squeeze()
         action[1] = (action[1] + 1) / 2
         action[-1] = -1
+        return action
+
+    def get_test_action(self, state):
+        self.eval()
+        state = torch.FloatTensor(state, dtype=torch.float32).unsqueeze(0).to(self.device)
+        mean, log_std = self.forward(state)
+
+        action = torch.clamp(mean, -1, 1).squeeze().cpu()
+        action[1] = (action[1] + 1) / 2
+        action[-1] = -1
+
         return action
