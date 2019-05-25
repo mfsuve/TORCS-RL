@@ -58,10 +58,10 @@ class Checkpoint(object):
         torch.save(self.state, path)
 
     def update(self, best_value, best_q1, best_q2, best_policy):
-        self.state['best_value'] = best_value
-        self.state['best_q1'] = best_q1
-        self.state['best_q2'] = best_q2
-        self.state['best_policy'] = best_policy
+        self.state['best_value'] = best_value.state_dict()
+        self.state['best_q1'] = best_q1.state_dict()
+        self.state['best_q2'] = best_q2.state_dict()
+        self.state['best_policy'] = best_policy.state_dict()
 
 
 def log(msg, end=None):
