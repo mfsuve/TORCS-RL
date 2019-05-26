@@ -5,7 +5,7 @@ import torch
 
 class SAC_args:
     def __init__(self):
-        self.max_eps = 100000
+        self.max_eps = 3000
         self.max_eps_time = 1000
         self.gamma = 0.985
         self.soft_tau = 0.01
@@ -20,6 +20,7 @@ class SAC_args:
         self.start_sigma = 0.9
         self.end_sigma = 0.1
         self.theta = 0.15
+        self.change_track_per = 100
 
 
 class OrnsteinUhlenbeckProcess(object):
