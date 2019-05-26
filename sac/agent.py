@@ -12,7 +12,7 @@ import time
 
 class SAC_Agent:
 
-    def __init__(self):
+    def __init__(self, load_from=None):
         self.env = TorcsEnv(path='/usr/local/share/games/torcs/config/raceman/quickrace.xml')
         self.args = SAC_args()
         self.buffer = ReplayBuffer(self.args.buffer_size)
@@ -50,6 +50,12 @@ class SAC_Agent:
         make_sure_dir_exists(self.model_save_folder)
         self.cp = Checkpoint(self.model_save_folder)
         remove_log_file()
+
+        if load_from is not None:
+            try:
+                self.load_checkpoint(load_from)
+            except FileNotFoundError:
+                print(f'{load_from} not found. Running default.')
 
     def train(self):
         time = 0
@@ -202,5 +208,24 @@ class SAC_Agent:
 
     def save_checkpoint(self, eps_n, test_reward):
         self.cp.update(self.value_net, self.soft_q_net1, self.soft_q_net2, self.policy_net)
-        self.cp.save(f'e{eps_n}r{test_reward}.pth')
+        self.cp.save(f'e{eps_n}-r{test_reward:.2f}.pth')
         log(f'Saved checkpoint at episode {eps_n}.')
+
+    def load_checkpoint(self, load_from):
+        state_dicts = torch.load(load_from)
+        self.value_net.load_state_dict(state_dicts['best_value'])
+        self.soft_q_net1.load_state_dict(state_dicts['best_q1'])
+        self.soft_q_net2.load_state_dict(state_dicts['best_q2'])
+        self.policy_net.load_state_dict(state_dicts['best_policy'])
+
+    def race(self, sampletrack=True):
+        with torch.no_grad():
+            state = self.env.reset(relaunch=False, render=True, sampletrack=sampletrack)
+            running_reward = 0
+            done = False
+            while not done:
+                action = self.policy_net.get_test_action(state)
+                state, reward, done, _ = self.env.step(action.detach())
+                running_reward += reward
+
+            print('Reward:', running_reward)
