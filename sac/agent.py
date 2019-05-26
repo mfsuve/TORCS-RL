@@ -186,6 +186,10 @@ class SAC_Agent:
         return avg_reward
 
     def plot(self, rewards, test_rewards, eps_n):
+        torch.save({
+            'train_rewards': rewards,
+            'test_rewards': test_rewards
+        }, f'{self.plot_folder}/{eps_n}.pth')
         figure = plt.figure()
         plt.plot(rewards, label='Train Rewards')
         plt.plot(test_rewards, label='Test Rewards')
