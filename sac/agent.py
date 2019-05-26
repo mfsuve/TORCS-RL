@@ -186,8 +186,15 @@ class SAC_Agent:
         plt.xlabel('Episode')
         plt.legend()
         plt.savefig(f'{self.plot_folder}/{eps_n}.png')
-        send_mail(f'Torcs SAC | Episode {eps_n}', f'{self.plot_folder}/{eps_n}.png')
-        log('Mail has been sent.')
+        try:
+            send_mail(f'Torcs SAC | Episode {eps_n}', f'{self.plot_folder}/{eps_n}.png')
+            log('Mail has been sent.')
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except Exception as e:
+            emsg = e.args[-1]
+            emsg = emsg[:1].lower() + emsg[1:]
+            log('Couldn\'t send mail because', emsg)
 
     def clip_grad(self, parameters):
         for param in parameters:
