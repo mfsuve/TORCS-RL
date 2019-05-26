@@ -4,9 +4,13 @@
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
-import smtplib, ssl
+import smtplib
+import ssl
+from mail_config import Config
 
-def send_mail(subject, img_path, config):
+
+def send_mail(subject, img_path):
+    config = Config()
     # Create the root message and fill in the from, to, and subject headers
     msgRoot = MIMEMultipart('related')
     msgRoot['Subject'] = subject
