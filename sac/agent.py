@@ -172,10 +172,10 @@ class SAC_Agent:
 
     def test(self, eps_n):
         rewards = []
-        for _ in range(self.args.test_rate):
+        for step in range(self.args.test_rate):
             state = self.env.reset(relaunch=False, render=False, sampletrack=False)
             running_reward = 0
-            for t in range(50000):
+            for t in range(self.args.max_eps_time):
                 action = self.policy_net.get_test_action(state)
                 state, reward, done, _ = self.env.step(action.detach())
                 running_reward += reward
@@ -212,7 +212,7 @@ class SAC_Agent:
 
     def save_checkpoint(self, eps_n, test_reward):
         self.cp.update(self.value_net, self.soft_q_net1, self.soft_q_net2, self.policy_net)
-        self.cp.save(f'e{eps_n}-r{test_reward:.2f}.pth')
+        self.cp.save(f'e{eps_n}-r{test_reward:.4f}.pth')
         log(f'Saved checkpoint at episode {eps_n}.')
 
     def load_checkpoint(self, load_from):
@@ -221,6 +221,7 @@ class SAC_Agent:
         self.soft_q_net1.load_state_dict(state_dicts['best_q1'])
         self.soft_q_net2.load_state_dict(state_dicts['best_q2'])
         self.policy_net.load_state_dict(state_dicts['best_policy'])
+        print(f'Loaded from {load_from}.')
 
     def race(self, sampletrack=True):
         with torch.no_grad():
