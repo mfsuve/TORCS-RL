@@ -49,7 +49,6 @@ class SAC_Agent:
         make_sure_dir_exists(self.plot_folder)
         make_sure_dir_exists(self.model_save_folder)
         self.cp = Checkpoint(self.model_save_folder)
-        remove_log_file()
 
         if load_from is not None:
             try:
@@ -58,6 +57,7 @@ class SAC_Agent:
                 print(f'{load_from} not found. Running default.')
 
     def train(self):
+        remove_log_file()
         time = 0
         eps_n = 0
         rewards = []
