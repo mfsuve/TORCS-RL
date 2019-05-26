@@ -168,7 +168,7 @@ class TorcsEnv:
 
         # giving positive rewards for passing someone
         # and negative rewards for being passed by someone
-        reward += (self.place - info["place"]) * 2
+        reward += (self.place - info["place"]) * 5
         self.place = info["place"]
 
         return self.get_obs(), reward, episode_terminate, info
@@ -220,7 +220,7 @@ class TorcsEnv:
         obs = client.S.d  # Get the current full-observation from torcs
         self.observation = self.make_observaton(obs)
 
-        self.place = obs["place"]
+        self.place = int(obs["racePos"])
 
         self.initial_reset = False
         return self.get_obs()
