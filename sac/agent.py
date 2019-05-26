@@ -57,16 +57,16 @@ class SAC_Agent:
         rewards = []
         test_rewards = []
         best_reward = -np.inf
-        sample_track = False
+        # sample_track = False
         for eps_n in range(1, self.args.max_eps + 1):  # Train loop
             relaunch = (eps_n - 1) % (100 / self.args.test_rate) == 0
-            if not sample_track:
-                sample_track = (eps_n - 1) % self.args.change_track_per == 0
-            if sample_track and relaunch:
-                log('Sampling new track')
-            state = self.env.reset(relaunch=relaunch, render=False, sampletrack=sample_track)
-            if relaunch:
-                sample_track = False
+            # if not sample_track:
+            #     sample_track = (eps_n - 1) % self.args.change_track_per == 0
+            # if sample_track and relaunch:
+            #     log('Sampling new track')
+            state = self.env.reset(relaunch=relaunch, render=False, sampletrack=False)#sample_track)
+            # if relaunch:
+            #     sample_track = False
             eps_r = 0
             sigma = (self.args.start_sigma - self.args.end_sigma) * (
                 max(0, 1 - (eps_n - 1) / self.args.max_eps)) + self.args.end_sigma
