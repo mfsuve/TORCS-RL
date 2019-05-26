@@ -1,4 +1,5 @@
 from sac_utils import SAC_args, make_sure_dir_exists, log, remove_log_file, OrnsteinUhlenbeckProcess, Checkpoint
+from mail_util import send_mail
 from buffer import ReplayBuffer
 from network import ValueNetwork, SoftQNetwork, PolicyNetwork
 from gym_torcs import TorcsEnv
@@ -61,6 +62,8 @@ class SAC_Agent:
             relaunch = (eps_n - 1) % (100 / self.args.test_rate) == 0
             if not sample_track:
                 sample_track = (eps_n - 1) % self.args.change_track_per == 0
+            if sample_track and relaunch:
+                log('Sampling new track')
             state = self.env.reset(relaunch=relaunch, render=False, sampletrack=sample_track)
             if relaunch:
                 sample_track = False
@@ -183,6 +186,8 @@ class SAC_Agent:
         plt.xlabel('Episode')
         plt.legend()
         plt.savefig(f'{self.plot_folder}/{eps_n}.png')
+        send_mail(f'Torcs SAC | Episode {eps_n}', f'{self.plot_folder}/{eps_n}.png')
+        log('Mail has been sent.')
 
     def clip_grad(self, parameters):
         for param in parameters:
