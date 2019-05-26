@@ -15,7 +15,7 @@ class SAC_args:
         self.batch_size = 128
         self.device = 'cpu'
         self.test_rate = 5
-        self.plot_per = 50
+        self.plot_per = 20
         self.clipgrad = True
         self.start_sigma = 0.9
         self.end_sigma = 0.1
