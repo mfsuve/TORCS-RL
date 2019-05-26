@@ -57,7 +57,8 @@ class SAC_Agent:
         test_rewards = []
         best_reward = -np.inf
         for eps_n in range(1, self.args.max_eps + 1):  # Train loop
-            state = self.env.reset(relaunch=(eps_n - 1) % (100/self.args.test_rate) == 0, render=False, sampletrack=False)
+            state = self.env.reset(relaunch=(eps_n - 1) % (100 / self.args.test_rate) == 0, render=False,
+                                   sampletrack=False)
             eps_r = 0
             sigma = (self.args.start_sigma - self.args.end_sigma) * (
                 max(0, 1 - (eps_n - 1) / self.args.max_eps)) + self.args.end_sigma
@@ -90,13 +91,12 @@ class SAC_Agent:
 
             if test_reward > best_reward:
                 best_reward = test_reward
-                self.save_checkpoint(eps_n)
+                self.save_checkpoint(eps_n, best_reward)
 
             log(f'Episode {eps_n:<4} Reward: {eps_r:<10.5f} Test Reward: {test_reward:<10.5f}')
 
             if eps_n % self.args.plot_per == 0:
                 self.plot(rewards, test_rewards, eps_n)
-
 
     def update(self):
         self.policy_net.train()
@@ -183,6 +183,7 @@ class SAC_Agent:
         for param in parameters:
             param.grad.data.clamp_(-1, 1)
 
-    def save_checkpoint(self, eps_n):
+    def save_checkpoint(self, eps_n, test_reward):
         self.cp.update(self.value_net, self.soft_q_net1, self.soft_q_net2, self.policy_net)
-        self.cp.save(f'{eps_n}.pth')
+        self.cp.save(f'e{eps_n}r{test_reward}.pth')
+        log(f'Saved checkpoint at episode {eps_n}.')
