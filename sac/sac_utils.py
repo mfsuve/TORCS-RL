@@ -65,13 +65,13 @@ class Checkpoint(object):
         self.state['best_policy'] = best_policy.state_dict()
 
 
-def log(msg, end=None):
+def log(*msg, end=None):
     with open('logger/logs.txt', 'a+') as log_file:
         time_str = time.strftime('%d-%b-%y %H:%M:%S', time.localtime())
         if end is None:
-            print(f'{time_str}\t{msg}', file=log_file)
+            print(f'{time_str}\t', *msg, file=log_file)
         else:
-            print(f'{time_str}\t{msg}', file=log_file, end=end)
+            print(f'{time_str}\t', *msg, file=log_file, end=end)
 
 
 def remove_log_file():
