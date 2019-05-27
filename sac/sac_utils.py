@@ -9,7 +9,7 @@ class SAC_args:
         self.max_eps_time = 1000
         self.gamma = 0.985
         self.soft_tau = 0.01
-        self.lr = 0.001
+        self.lr = 0.0005
         self.alpha = 0.2
         self.buffer_size = 300000
         self.batch_size = 128
