@@ -231,7 +231,7 @@ class SAC_Agent:
             done = False
             while not done:
                 action = self.policy_net.get_test_action(state)
-                state, reward, done, _ = self.env.step(action.detach())
+                state, reward, done, info = self.env.step(action)
                 running_reward += reward
 
             print('Reward:', running_reward)
