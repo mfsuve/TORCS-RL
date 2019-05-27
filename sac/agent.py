@@ -178,7 +178,7 @@ class SAC_Agent:
             running_reward = 0
             for t in range(self.args.max_eps_time):
                 action = self.policy_net.get_test_action(state)
-                state, reward, done, _ = self.env.step(action.detach())
+                state, reward, done, _ = self.env.step(action)
                 running_reward += reward
                 if done:
                     break

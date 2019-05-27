@@ -112,4 +112,4 @@ class PolicyNetwork(nn.Module):
         action[1] = (action[1] + 1) / 2
         action[-1] = -1
 
-        return action.numpy()
+        return action.detach().numpy()
