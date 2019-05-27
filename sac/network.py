@@ -98,8 +98,10 @@ class PolicyNetwork(nn.Module):
         action = torch.tanh(mean + std * z)
 
         action = action.cpu() + randomprocess.noise()
-        action = torch.clamp(action, -1, 1).squeeze()
-        action[1] = (action[1] + 1) / 2
+        action = action.squeeze()
+        acc = action[1]
+        action = torch.clamp(action, -1, 1)
+        action[1] = torch.clamp(acc, min=0) # Not clamping acceleration
         action[-1] = -1
         return action
 
@@ -108,8 +110,10 @@ class PolicyNetwork(nn.Module):
         state = torch.FloatTensor(state).unsqueeze(0).to(self.device)
         mean, log_std = self.forward(state)
 
-        action = torch.clamp(mean, -1, 1).squeeze().cpu()
-        action[1] = (action[1] + 1) / 2
+        action = mean.squeeze().cpu()
+        acc = action[1]
+        action = torch.clamp(action, -1, 1)
+        action[1] = torch.clamp(acc, min=0) # Not clamping acceleration
         action[-1] = -1
 
         return action.detach().numpy()
