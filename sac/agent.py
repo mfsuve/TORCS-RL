@@ -12,7 +12,7 @@ import time
 
 class SAC_Agent:
 
-    def __init__(self, load_from=None):
+    def __init__(self, load_from=None, will_train=True):
         self.env = TorcsEnv(path='/usr/local/share/games/torcs/config/raceman/quickrace.xml')
         self.args = SAC_args()
         self.buffer = ReplayBuffer(self.args.buffer_size)
@@ -43,12 +43,13 @@ class SAC_Agent:
         self.soft_q_opt2 = optim.Adam(self.soft_q_net2.parameters(), lr=self.args.lr)
         self.policy_opt = optim.Adam(self.policy_net.parameters(), lr=self.args.lr)
 
-        current_time = time.strftime('%d-%b-%y-%H.%M.%S', time.localtime())
-        self.plot_folder = f'plots/{current_time}'
-        self.model_save_folder = f'model/{current_time}'
-        make_sure_dir_exists(self.plot_folder)
-        make_sure_dir_exists(self.model_save_folder)
-        self.cp = Checkpoint(self.model_save_folder)
+        if will_train:
+            current_time = time.strftime('%d-%b-%y-%H.%M.%S', time.localtime())
+            self.plot_folder = f'plots/{current_time}'
+            self.model_save_folder = f'model/{current_time}'
+            make_sure_dir_exists(self.plot_folder)
+            make_sure_dir_exists(self.model_save_folder)
+            self.cp = Checkpoint(self.model_save_folder)
 
         if load_from is not None:
             try:
