@@ -64,16 +64,10 @@ class SAC_Agent:
         rewards = []
         test_rewards = []
         best_reward = -np.inf
-        # sample_track = False
+        info = None
         for eps_n in range(1, self.args.max_eps + 1):  # Train loop
             relaunch = (eps_n - 1) % (20 / self.args.test_rate) == 0
-            # if not sample_track:
-            #     sample_track = (eps_n - 1) % self.args.change_track_per == 0
-            # if sample_track and relaunch:
-            #     log('Sampling new track')
             state = self.env.reset(relaunch=relaunch, render=False, sampletrack=False)#sample_track)
-            # if relaunch:
-            #     sample_track = False
             eps_r = 0
             sigma = (self.args.start_sigma - self.args.end_sigma) * (
                 max(0, 1 - (eps_n - 1) / self.args.max_eps)) + self.args.end_sigma
@@ -82,10 +76,10 @@ class SAC_Agent:
             for step in range(self.args.max_eps_time):  # Episode
                 if time > 1000:
                     action = self.policy_net.get_train_action(state, randomprocess).detach()
-                    next_state, reward, done, _ = self.env.step(action.numpy())
+                    next_state, reward, done, info = self.env.step(action.numpy())
                 else:  # Random actions for the first few times
                     action = self.env.action_space.sample()
-                    next_state, reward, done, _ = self.env.step(action)
+                    next_state, reward, done, info = self.env.step(action)
 
                 self.buffer.push(state, action, reward, next_state, done)
 
@@ -108,7 +102,9 @@ class SAC_Agent:
                 best_reward = test_reward
                 self.save_checkpoint(eps_n, best_reward)
 
-            log(f'Episode {eps_n:<4} Reward: {eps_r:<10.5f} Test Reward: {test_reward:<10.5f}')
+            info_str = ', '.join([key for key in info.keys() if key != 'place'])
+            info_str += f", {info['place']}. place"
+            log(f'Episode {eps_n:<4} Reward: {eps_r:>7.2f} Test Reward: {test_reward:>7.2f} Info: {info_str}')
 
             if eps_n % self.args.plot_per == 0:
                 self.plot(rewards, test_rewards, eps_n)
@@ -198,11 +194,13 @@ class SAC_Agent:
         plt.legend()
         plt.savefig(f'{self.plot_folder}/{eps_n}.png')
         try:
-            send_mail(f'Torcs SAC | Episode {eps_n}', f'{self.plot_folder}/{eps_n}.png')
+            send_mail(f'Improved Torcs SAC | Episode {eps_n}', f'{self.plot_folder}/{eps_n}.png')
             log('Mail has been sent.')
         except (KeyboardInterrupt, SystemExit):
+            print('KeyboardInterrupt or SystemExit')
             raise
         except Exception as e:
+            print('Mail Exception occured:', e)
             emsg = e.args[-1]
             emsg = emsg[:1].lower() + emsg[1:]
             log('Couldn\'t send mail because', emsg)
