@@ -88,9 +88,14 @@ def store(action, eps_n):
     log_file.close()
 
 
-def remove_log_file():
-    if os.path.exists('logger/logs.txt'):
-        os.remove('logger/logs.txt')
+def clear_action_logs():
+    for log_file_name in os.listdir('actions'):
+        remove_log_file(f'actions/{log_file_name}.txt')
+
+
+def remove_log_file(log_file_name='logs.txt'):
+    if os.path.exists(f'logger/{log_file_name}'):
+        os.remove(f'logger/{log_file_name}')
 
 
 def make_sure_dir_exists(dir):
