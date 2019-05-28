@@ -1,4 +1,4 @@
-from sac_utils import SAC_args, make_sure_dir_exists, log, remove_log_file, OrnsteinUhlenbeckProcess, Checkpoint
+from sac_utils import SAC_args, make_sure_dir_exists, log, remove_log_file, store, clear_action_logs, OrnsteinUhlenbeckProcess, Checkpoint
 from mail_util import send_mail
 from buffer import ReplayBuffer
 from network import ValueNetwork, SoftQNetwork, PolicyNetwork
@@ -59,6 +59,7 @@ class SAC_Agent:
 
     def train(self):
         remove_log_file()
+        clear_action_logs()
         time = 0
         eps_n = 0
         rewards = []
@@ -67,7 +68,7 @@ class SAC_Agent:
         info = None
         for eps_n in range(1, self.args.max_eps + 1):  # Train loop
             relaunch = (eps_n - 1) % (20 / self.args.test_rate) == 0
-            state = self.env.reset(relaunch=relaunch, render=False, sampletrack=False)#sample_track)
+            state = self.env.reset(relaunch=relaunch, render=False, sampletrack=False)
             eps_r = 0
             sigma = (self.args.start_sigma - self.args.end_sigma) * (
                 max(0, 1 - (eps_n - 1) / self.args.max_eps)) + self.args.end_sigma
@@ -80,6 +81,8 @@ class SAC_Agent:
                 else:  # Random actions for the first few times
                     action = self.env.action_space.sample()
                     next_state, reward, done, info = self.env.step(action)
+
+                store(action, eps_ns)
 
                 self.buffer.push(state, action, reward, next_state, done)
 
