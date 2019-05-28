@@ -91,29 +91,18 @@ class PolicyNetwork(nn.Module):
         self.eval()
         state = torch.FloatTensor(state).unsqueeze(0).to(self.device)
         mean, log_std = self.forward(state)
-        std = log_std.exp()
+        std = log_std.exp().squeeze()
 
         normal = Normal(0, 1)
         z = normal.sample().to(self.device)
-        action = torch.tanh(mean + std * z)
+        action = torch.tanh(mean.squeeze() + std * z)
 
         action = action.cpu() + randomprocess.noise()
-        action = action.squeeze()
-        acc = action[1]
-        action = torch.clamp(action, -1, 1)
-        action[1] = torch.clamp(acc, min=0) # Not clamping acceleration
-        action[-1] = -1
-        return action
+        return action.squeeze()
 
     def get_test_action(self, state):
         self.eval()
         state = torch.FloatTensor(state).unsqueeze(0).to(self.device)
         mean, log_std = self.forward(state)
 
-        action = mean.squeeze().cpu()
-        acc = action[1]
-        action = torch.clamp(action, -1, 1)
-        action[1] = torch.clamp(acc, min=0) # Not clamping acceleration
-        action[-1] = -1
-
-        return action.detach().numpy()
+        return mean.detach().cpu().squeeze().numpy()
