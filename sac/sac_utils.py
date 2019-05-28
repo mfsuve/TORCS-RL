@@ -74,6 +74,20 @@ def log(*msg, end=None):
             print(f'{time_str}\t', *msg, file=log_file, end=end)
 
 
+def store(action, eps_n):
+    filename = f'logger/actions/{eps_n}.txt'
+    if not os.path.exists(filename):
+        os.mkdir(filename)
+        log_file = open(filename, 'a+')
+        print(f'                Episode {eps_n}', file=log_file)
+        print('=' * 45)
+        print('     Steer       Acceleration      Brake     ', file=log_file)
+    else:
+        log_file = open(filename, 'a+')
+    print(f'    {action[0]:>7.3f}        {action[1]:>7.3f}        {action[2]:>7.3f}    ', file=log_file)
+    log_file.close()
+
+
 def remove_log_file():
     if os.path.exists('logger/logs.txt'):
         os.remove('logger/logs.txt')
