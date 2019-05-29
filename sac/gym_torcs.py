@@ -12,6 +12,7 @@ import xml.etree.ElementTree as ET
 from utils import sample_track
 from utils import set_render_mode
 
+
 class TorcsEnv:
     """
     Gym torcs environment.
@@ -43,7 +44,7 @@ class TorcsEnv:
 
     """
     terminal_judge_start = 50  # Speed limit is applied after this step
-    termination_limit_progress = 5/200  # [km/h], episode terminates if car is running slower than this limit
+    termination_limit_progress = 5 / 200  # [km/h], episode terminates if car is running slower than this limit
 
     initial_reset = True
 
@@ -51,11 +52,11 @@ class TorcsEnv:
         self.port = port
         self.initial_run = True
         # self.reset_torcs()
-        
+
         if path:
             self.tree = ET.parse(path)
             self.root = self.tree.getroot()
-            self.path=path
+            self.path = path
 
         self.action_space = spaces.Box(low=-1.0, high=1.0, shape=(3,))
         high = np.concatenate([
@@ -70,7 +71,7 @@ class TorcsEnv:
         ])
         low = np.concatenate([
             np.array([-1.0]),
-            np.ones(19)*-1/200,
+            np.ones(19) * -1 / 200,
             np.array([-1.0]),
             np.array([-1.0]),
             np.array([-1.0]),
@@ -130,18 +131,18 @@ class TorcsEnv:
         # Reward setting Here #######################################
         # direction-dependent positive reward
         track = np.array(obs['track'])
-        sp = np.array(obs['speedX'])/200
-        progress = sp*np.cos(obs['angle'])
-        reward = progress - sp*np.sin(obs["angle"]) - sp * np.abs(obs['trackPos'])/5
+        sp = np.array(obs['speedX']) / 200
+        progress = sp * np.cos(obs['angle'])
+        reward = progress - sp * np.sin(obs["angle"]) - sp * np.abs(obs['trackPos']) / 5
 
         # collision detection
         if obs['damage'] - obs_pre['damage'] > 0:
             info["collision"] = True
             reward = -1
 
-        if self.terminal_judge_start < self.time_step: # Episode terminates if the progress of agent is small
-           if abs(progress) < self.termination_limit_progress:
-               if self.time_step >  20 :
+        if self.terminal_judge_start < self.time_step:  # Episode terminates if the progress of agent is small
+            if abs(progress) < self.termination_limit_progress:
+                if self.time_step > 20:
                     reward -= 10
                     # print("--- No progress restart : reward: {},x:{},angle:{},trackPos:{}".format(reward,sp,obs['angle'],obs['trackPos']))
                     # print(self.time_step)
@@ -150,7 +151,7 @@ class TorcsEnv:
                     # client.R.d['meta'] = True
 
         if np.cos(obs['angle']) < 0:  # Episode is terminated if the agent runs backward
-            if self.time_step >  20 :
+            if self.time_step > 20:
                 reward -= 10
                 # print("--- backward restart : reward: {},x:{},angle:{},trackPos:{}".format( reward, sp, obs['angle'], obs['trackPos']))
                 # print(self.time_step)
@@ -159,8 +160,8 @@ class TorcsEnv:
                 # client.R.d['meta'] = True
 
         info["place"] = int(obs["racePos"])
-        if episode_terminate is True: # Send a reset signal
-            reward += (obs["racePos"] == 1)*20 # If terminated and first place
+        if episode_terminate is True:  # Send a reset signal
+            reward += (obs["racePos"] == 1) * 20  # If terminated and first place
             self.initial_run = False
             # client.respond_to_server()
 
@@ -196,7 +197,7 @@ class TorcsEnv:
             try:
                 set_render_mode(self.root, render=render)
             except AttributeError:
-                    pass
+                pass
             self.tree.write(self.path)
             time.sleep(0.5)
 
@@ -236,7 +237,7 @@ class TorcsEnv:
         return self.observation
 
     def reset_torcs(self, port=3101):
-       #print("relaunch torcs")
+        # print("relaunch torcs")
         os.system('pkill torcs')
         time.sleep(0.5)
         os.system('torcs -nofuel -nodamage -nolaptime -p 3101 &')
@@ -247,19 +248,19 @@ class TorcsEnv:
     def agent_to_torcs(self, u):
         torcs_action = {'steer': u[0]}
         torcs_action.update({'accel': u[1]})
-        torcs_action.update({'brake': (u[2] + 1)/2})
+        torcs_action.update({'brake': (u[2] + 1) / 2})
         return torcs_action
 
     def make_observaton(self, raw_obs):
         return np.concatenate(
-            [np.array(raw_obs["angle"], dtype=np.float32).reshape(1)/np.pi*2,
-            np.array(raw_obs["track"], dtype=np.float32)/100,
-            np.array(raw_obs["trackPos"], dtype=np.float32).reshape(1)/2,
-            np.array(raw_obs["speedX"], dtype=np.float32).reshape(1)/200,
-            np.array(raw_obs["speedZ"], dtype=np.float32).reshape(1)/200,
-            np.array(raw_obs["speedY"], dtype=np.float32).reshape(1)/200,
-            np.array(raw_obs["wheelSpinVel"], dtype=np.float32)/200,
-            np.array(raw_obs["rpm"], dtype=np.float32).reshape(1)/5000]
+            [np.array(raw_obs["angle"], dtype=np.float32).reshape(1) / np.pi * 2,
+             np.array(raw_obs["track"], dtype=np.float32) / 100,
+             np.array(raw_obs["trackPos"], dtype=np.float32).reshape(1) / 2,
+             np.array(raw_obs["speedX"], dtype=np.float32).reshape(1) / 200,
+             np.array(raw_obs["speedZ"], dtype=np.float32).reshape(1) / 200,
+             np.array(raw_obs["speedY"], dtype=np.float32).reshape(1) / 200,
+             np.array(raw_obs["wheelSpinVel"], dtype=np.float32) / 200,
+             np.array(raw_obs["rpm"], dtype=np.float32).reshape(1) / 5000]
         )
 
     def __del__(self):
