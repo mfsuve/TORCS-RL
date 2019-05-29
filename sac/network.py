@@ -98,11 +98,15 @@ class PolicyNetwork(nn.Module):
         action = torch.tanh(mean.squeeze() + std * z)
 
         action = action.cpu() + randomprocess.noise()
-        return action.squeeze()
+        action = action.squeeze()
+        action[1] = torch.clamp(action[1], min=0)
+        return action.detach().numpy()
 
     def get_test_action(self, state):
         self.eval()
         state = torch.FloatTensor(state).unsqueeze(0).to(self.device)
         mean, log_std = self.forward(state)
 
-        return mean.detach().cpu().squeeze().numpy()
+        action = mean.detach().cpu().squeeze()
+        action[1] = torch.clamp(action[1], min=0)
+        return action.numpy()
