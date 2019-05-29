@@ -167,7 +167,9 @@ class SAC_Agent:
     def test(self, eps_n):
         rewards = []
         for step in range(self.args.test_rate):
-            state = self.env.reset(relaunch=False, render=False, sampletrack=False)
+            render = (eps_n % 30 == 0) and (step == 0)
+            relaunch = render or ((eps_n % 30 == 0) and (step == 1))
+            state = self.env.reset(relaunch=relaunch, render=render, sampletrack=False)
             running_reward = 0
             for t in range(self.args.max_eps_time):
                 action = self.policy_net.get_test_action(state)
@@ -222,7 +224,7 @@ class SAC_Agent:
 
     def race(self, sampletrack=True):
         with torch.no_grad():
-            state = self.env.reset(relaunch=False, render=True, sampletrack=sampletrack)
+            state = self.env.reset(relaunch=True, render=True, sampletrack=sampletrack)
             running_reward = 0
             done = False
             while not done:
