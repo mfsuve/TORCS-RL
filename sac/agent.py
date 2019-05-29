@@ -60,7 +60,6 @@ class SAC_Agent:
     def train(self):
         remove_log_file()
         clear_action_logs()
-        time = 0
         eps_n = 0
         rewards = []
         test_rewards = []
@@ -82,7 +81,6 @@ class SAC_Agent:
 
                 state = next_state
                 eps_r += reward
-                time += 1
 
                 if len(self.buffer) > self.args.batch_size:
                     self.update()
