@@ -169,8 +169,8 @@ class TorcsEnv:
 
         # giving positive rewards for passing someone
         # and negative rewards for being passed by someone
-        reward += (self.place - info["place"]) * 10
-        self.place = info["place"]
+        reward += max(self.place - info["place"], 0) * 10
+        self.place = min(self.place, info["place"])
 
         return self.get_obs(), reward, episode_terminate, info
 
