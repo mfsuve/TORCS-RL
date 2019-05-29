@@ -75,12 +75,8 @@ class SAC_Agent:
             randomprocess = OrnsteinUhlenbeckProcess(self.args.theta, sigma, self.action_size)
 
             for step in range(self.args.max_eps_time):  # Episode
-                if time > 1000:
-                    action = self.policy_net.get_train_action(state, randomprocess).detach()
-                    next_state, reward, done, info = self.env.step(action.numpy())
-                else:  # Random actions for the first few times
-                    action = self.env.action_space.sample()
-                    next_state, reward, done, info = self.env.step(action)
+                action = self.policy_net.get_train_action(state, randomprocess)
+                next_state, reward, done, info = self.env.step(action)
 
                 store(action, eps_ns)
 
