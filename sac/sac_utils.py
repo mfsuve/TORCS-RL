@@ -5,11 +5,11 @@ import torch
 
 class SAC_args:
     def __init__(self):
-        self.max_eps = 3000
+        self.max_eps = 100000
         self.max_eps_time = 1000
         self.gamma = 0.985
         self.soft_tau = 0.01
-        self.lr = 0.0005
+        self.lr = 0.0002
         self.alpha = 0.2
         self.buffer_size = 300000
         self.batch_size = 128
@@ -74,9 +74,35 @@ def log(*msg, end=None):
             print(f'{time_str}\t', *msg, file=log_file, end=end)
 
 
-def remove_log_file():
-    if os.path.exists('logger/logs.txt'):
-        os.remove('logger/logs.txt')
+def store(action, eps_n, reward, info, bar=False):
+    filename = f'logger/actions/{eps_n}.txt'
+    if not os.path.exists(filename):
+        log_file = open(filename, 'a+')
+        print(f'                  Episode {eps_n}', file=log_file)
+        print('=' * 150, file=log_file)
+        print('     Steer       Acceleration      Brake     ', file=log_file)
+    else:
+        log_file = open(filename, 'a+')
+        if bar:
+            print('=' * 150, file=log_file)
+
+    info_str = ', '.join([key for key in info.keys() if key != 'place'])
+    info_str += f", {info['place']}. place"
+    print(f'    {action[0]:>7.3f}        {action[1]:>7.3f}        {action[2]:>7.3f}    ', file=log_file, end='')
+    print(f'Reward: {reward:>15.10f} info: {info_str}', file=log_file)
+    log_file.close()
+
+
+def clear_action_logs():
+    for log_file_name in os.listdir('logger/actions'):
+        print(f'trying to remove actions/{log_file_name}')
+        remove_log_file(f'actions/{log_file_name}')
+
+
+def remove_log_file(log_file_name='logs.txt'):
+    if os.path.exists(f'logger/{log_file_name}'):
+        print(f'Removed logger/{log_file_name}')
+        os.remove(f'logger/{log_file_name}')
 
 
 def make_sure_dir_exists(dir):

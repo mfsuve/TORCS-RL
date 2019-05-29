@@ -3,13 +3,24 @@ from flask import Flask, request, render_template
 app = Flask(__name__, template_folder='.')
 
 
+def get_content_from(filename, errmsg='No logs found.'):
+    try:
+        with open(filename, 'r+') as file:
+            content = file.read()
+    except FileNotFoundError:
+        content = errmsg
+    return content
+
+
 @app.route('/')
 def log():
-    try:
-        with open('logs.txt', 'r+') as text:
-            content = text.read()
-    except FileNotFoundError:
-        content = 'No logs found.'
+    content = get_content_from('logs.txt')
+    return render_template('content.html', text=content)
+
+
+@app.route('/<int:episode>')
+def actions(episode):
+    content = get_content_from(f'actions/{episode}.txt', f'Not passed episode {episode} yet.')
     return render_template('content.html', text=content)
 
 
