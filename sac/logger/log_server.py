@@ -1,4 +1,5 @@
 from flask import Flask, render_template
+import os
 
 app = Flask(__name__, template_folder='.')
 
@@ -20,7 +21,15 @@ def log():
 
 @app.route('/<int:episode>')
 def actions(episode):
-    content = get_content_from(f'actions/{episode}.txt', f'Not passed episode {episode} yet.')
+    path = os.path.abspath(f'logger/actions/{episode}.txt')
+    parent = os.path.abspath(os.path.join(path, os.pardir))
+    actions_path = os.path.abspath('logger/actions')
+    print('actions path:', actions_path)
+    print('parent path:', parent)
+    if not actions_path == parent:
+        content = 'Please don\'t hack me'
+    else:
+        content = get_content_from(f'actions/{episode}.txt', f'Not passed episode {episode} yet.')
     return render_template('content.html', text=content)
 
 
