@@ -99,7 +99,7 @@ class PolicyNetwork(nn.Module):
 
         action = action.cpu() + randomprocess.noise()
         action = action.squeeze()
-        action[1] = torch.clamp(action[1], min=0)
+        # action[1] = torch.clamp(action[1], min=0)
         return action.detach().numpy()
 
     def get_test_action(self, state):
@@ -108,5 +108,5 @@ class PolicyNetwork(nn.Module):
         mean, log_std = self.forward(state)
 
         action = mean.detach().cpu().squeeze()
-        action[1] = torch.clamp(action[1], min=0)
+        # action[1] = torch.clamp(action[1], min=0)
         return action.numpy()
