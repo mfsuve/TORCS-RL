@@ -94,6 +94,7 @@ def store(action, eps_n, reward, info, bar=False):
 
 
 def clear_action_logs():
+    make_sure_dir_exists('logger/actions')
     for log_file_name in os.listdir('logger/actions'):
         print(f'trying to remove actions/{log_file_name}')
         remove_log_file(f'actions/{log_file_name}')
