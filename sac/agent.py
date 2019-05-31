@@ -56,6 +56,8 @@ class SAC_Agent:
                 self.load_checkpoint(load_from)
             except FileNotFoundError:
                 print(f'{load_from} not found. Running default.')
+        else:
+            print('Starting from scratch.')
 
     def train(self):
         remove_log_file()
