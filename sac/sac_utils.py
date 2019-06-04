@@ -11,16 +11,16 @@ class SAC_args:
         self.soft_tau = 0.01
         self.lr = 0.0002
         self.alpha = 0.2
-        self.buffer_size = 300000
-        self.batch_size = 128
+        self.buffer_size = 500000
+        self.batch_size = 256
         self.device = 'cpu'
         self.test_rate = 5
-        self.plot_per = 20
-        self.clipgrad = True
+        self.plot_per = 40
+        self.clipgrad = False #True
         self.start_sigma = 0.9
         self.end_sigma = 0.1
         self.theta = 0.15
-        self.change_track_per = 100
+        # self.change_track_per = 100
 
 
 class OrnsteinUhlenbeckProcess(object):
