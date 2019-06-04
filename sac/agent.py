@@ -68,6 +68,7 @@ class SAC_Agent:
         best_reward = -np.inf
         info = None
         for eps_n in range(1, self.args.max_eps + 1):  # Train loop
+            self.set_mode('train')
             relaunch = (eps_n - 1) % (20 / self.args.test_rate) == 0
             state = self.env.reset(relaunch=relaunch, render=False, sampletrack=False)
             eps_r = 0
@@ -107,7 +108,6 @@ class SAC_Agent:
                 self.plot(rewards, test_rewards, eps_n)
 
     def update(self):
-        self.policy_net.train()
         state, action, reward, next_state, done = self.buffer.sample(self.args.batch_size)
 
         state = FloatTensor(state).to(self.args.device)
@@ -165,6 +165,7 @@ class SAC_Agent:
             )
 
     def test(self, eps_n):
+        self.set_mode('eval')
         rewards = []
         for step in range(self.args.test_rate):
             render = (eps_n % 30 == 0) and (step == 0)
@@ -208,6 +209,22 @@ class SAC_Agent:
     def clip_grad(self, parameters):
         for param in parameters:
             param.grad.data.clamp_(-1, 1)
+
+    def set_mode(self, mode):
+        if mode == 'train':
+            self.value_net.train()
+            self.target_value_net.train()
+            self.soft_q_net1.train()
+            self.soft_q_net2.train()
+            self.policy_net.train()
+        elif mode == 'eval':
+            self.value_net.eval()
+            self.target_value_net.eval()
+            self.soft_q_net1.eval()
+            self.soft_q_net2.eval()
+            self.policy_net.eval()
+        else:
+            raise ValueError('mode should be either train or eval')
 
     def save_checkpoint(self, eps_n, test_reward):
         self.cp.update(self.value_net, self.soft_q_net1, self.soft_q_net2, self.policy_net)
