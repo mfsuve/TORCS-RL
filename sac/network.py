@@ -97,7 +97,7 @@ class PolicyNetwork(nn.Module):
         z = normal.sample().to(self.device)
         action = torch.tanh(mean.squeeze() + std * z)
 
-        action = action.cpu() + randomprocess.noise()
+        action = action.cpu()# + randomprocess.noise()
         action = action.squeeze()
         # action[1] = torch.clamp(action[1], min=0)
         return action.detach().numpy()
