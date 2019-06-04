@@ -13,9 +13,7 @@ class ValueNetwork(nn.Module):
         self.linear2 = nn.Linear(hidden_dim, hidden_dim)
         self.linear3 = nn.Linear(hidden_dim, 1)
 
-        self.linear3.weight.data.uniform_(-init_w, init_w)
-        self.linear3.bias.data.uniform_(-init_w, init_w)
-
+        self.apply(self.init_weights)
         self.train()
 
     def forward(self, state):
@@ -23,6 +21,11 @@ class ValueNetwork(nn.Module):
         x = F.relu(self.linear2(x))
         x = self.linear3(x)
         return x
+
+    def init_weights(self, m):
+        if isinstance(m, nn.Linear):
+            nn.init.xavier_normal_(m.weight)
+            nn.init.zeros_(m.bias)
 
 
 class SoftQNetwork(nn.Module):
@@ -33,9 +36,7 @@ class SoftQNetwork(nn.Module):
         self.linear2 = nn.Linear(hidden_size, hidden_size)
         self.linear3 = nn.Linear(hidden_size, 1)
 
-        self.linear3.weight.data.uniform_(-init_w, init_w)
-        self.linear3.bias.data.uniform_(-init_w, init_w)
-
+        self.apply(self.init_weights)
         self.train()
 
     def forward(self, state, action):
@@ -44,6 +45,11 @@ class SoftQNetwork(nn.Module):
         x = F.relu(self.linear2(x))
         x = self.linear3(x)
         return x
+
+    def init_weights(self, m):
+        if isinstance(m, nn.Linear):
+            nn.init.xavier_normal_(m.weight)
+            nn.init.zeros_(m.bias)
 
 
 class PolicyNetwork(nn.Module):
@@ -57,14 +63,11 @@ class PolicyNetwork(nn.Module):
         self.linear2 = nn.Linear(hidden_size, hidden_size)
 
         self.mean_linear = nn.Linear(hidden_size, num_actions)
-        self.mean_linear.weight.data.uniform_(-init_w, init_w)
-        self.mean_linear.bias.data.uniform_(-init_w, init_w)
 
         self.log_std_linear = nn.Linear(hidden_size, num_actions)
-        self.log_std_linear.weight.data.uniform_(-init_w, init_w)
-        self.log_std_linear.bias.data.uniform_(-init_w, init_w)
 
         self.device = SAC_args().device
+        self.apply(self.init_weights)
         self.train()
 
     def forward(self, state):
@@ -76,6 +79,11 @@ class PolicyNetwork(nn.Module):
         log_std = torch.clamp(log_std, self.log_std_min, self.log_std_max)
 
         return mean, log_std
+
+    def init_weights(self, m):
+        if isinstance(m, nn.Linear):
+            nn.init.xavier_normal_(m.weight)
+            nn.init.zeros_(m.bias)
 
     def evaluate(self, state, epsilon=1e-6):
         mean, log_std = self.forward(state)
@@ -98,7 +106,7 @@ class PolicyNetwork(nn.Module):
         # action = torch.tanh(mean.squeeze() + std * z)
         action = mean.squeeze() + std * z
 
-        action = action.cpu()# + randomprocess.noise()
+        action = action.cpu()  # + randomprocess.noise()
         action = action.squeeze()
         # action[1] = torch.clamp(action[1], min=0)
         return action.detach().numpy()
